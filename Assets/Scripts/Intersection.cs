@@ -105,9 +105,12 @@ public static class Intersection
 		// check if the point collider is within the edges of the AABB collider
 		bool intersects = false;
 
+        bool insideHoriz = collider2.point.x >= collider1.left && collider2.point.x <= collider1.right;
+        bool insideVert = collider2.point.y >= collider1.bottom && collider2.point.y <= collider1.top;
 
+        intersects = (insideHoriz && insideVert);
 
-		return (intersects);
+        return (intersects);
 	}
 
 	static public bool Intersects(ColliderAABB collider1, ColliderSphere collider2, ref Result result)
@@ -117,6 +120,19 @@ public static class Intersection
 
 		bool intersects = false;
 
-		return (intersects);
+        Vector2 direction = collider1.center - collider2.center;
+        float horiz = direction.x * direction.x;
+        float vert = direction.y * direction.y;
+        Vector2 directionNormal = direction / Mathf.Sqrt(horiz + vert);
+        Vector2 point = directionNormal * collider2.radius; // The point closest to the center of the square (on the lane connecting them)
+        Vector2 closestPosition = collider2.center + point;
+
+        //Debug.DrawLine(collider2.center, closestPosition, Color.yellow);
+        bool insideHoriz = closestPosition.x >= collider1.left && closestPosition.x <= collider1.right;
+        bool insideVert = closestPosition.y >= collider1.bottom && closestPosition.y <= collider1.top;
+
+        intersects = (insideHoriz && insideVert);
+
+        return (intersects);
 	}
 }

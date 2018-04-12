@@ -5,16 +5,22 @@ using UnityEngine;
 public class Simulator : MonoBehaviour
 {
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
-	[SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
+    [SerializeField] [Range(0.0f, 50.0f)] float m_gravity = 0.0f;
+    [SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
 
 	List<PhysicsObject> m_physicsObjects = null;
     Creator m_creator = null;
 
+    public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
+    IntegratorDelegate m_integrator;
+
     void Awake()
     {
-        m_creator = new CreatorInputPoint();
+        m_creator = new CreatorInputVelocity();
         m_physicsObjects = new List<PhysicsObject>();
+
+        m_integrator = Integrator.ExplicitEuler;
     }
 
     void Update()
@@ -31,9 +37,15 @@ public class Simulator : MonoBehaviour
         if (newPhysicsObject != null)
         {
             m_physicsObjects.Add(newPhysicsObject);
+            newPhysicsObject.force = Vector2.down * m_gravity;
         }
 
-		// reset physics object collision state
+        foreach (PhysicsObject physicsObject in m_physicsObjects)
+        {
+            physicsObject.StepSimulation(dt, m_integrator);
+        }
+
+        // reset physics object collision state
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
 			physicsObject.m_collided = false;

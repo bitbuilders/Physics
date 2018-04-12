@@ -35,4 +35,9 @@ public class PhysicsObject
 
 		return intersects;
 	}
+
+    public void StepSimulation(float dt, Simulator.IntegratorDelegate integrator)
+    {
+        integrator(dt, this);
+    }
 }

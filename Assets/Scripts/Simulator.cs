@@ -36,18 +36,14 @@ public class Simulator : MonoBehaviour
         PhysicsObject newPhysicsObject = m_creator.Update(dt);
         if (newPhysicsObject != null)
         {
-            m_physicsObjects.Add(newPhysicsObject);
             newPhysicsObject.force = Vector2.down * m_gravity;
-        }
-
-        foreach (PhysicsObject physicsObject in m_physicsObjects)
-        {
-            physicsObject.StepSimulation(dt, m_integrator);
+            m_physicsObjects.Add(newPhysicsObject);
         }
 
         // reset physics object collision state
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
+            physicsObject.StepSimulation(dt, m_integrator);
 			physicsObject.m_collided = false;
         }
 

@@ -15,6 +15,4 @@ public static class Integrator
         physicsObject.velocity = physicsObject.velocity + (physicsObject.inverseMass * physicsObject.force) * dt;
         physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
     }
-
-
 }

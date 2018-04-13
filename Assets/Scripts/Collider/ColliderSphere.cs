@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ColliderSphere : Collider
 {
-    const int RENDER_STEPS = 20;
+    const int RENDER_STEPS = 50;
 
 	public float radius { get; set; }
 	public Vector2 center { get { return physicsObject.position; } }

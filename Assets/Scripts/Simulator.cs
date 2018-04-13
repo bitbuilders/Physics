@@ -6,6 +6,7 @@ public class Simulator : MonoBehaviour
 {
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] [Range(0.0f, 50.0f)] float m_gravity = 0.0f;
+    [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
     [SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
 
@@ -17,7 +18,8 @@ public class Simulator : MonoBehaviour
 
     void Awake()
     {
-        m_creator = new CreatorInputVelocity();
+        m_creator = new CreatorInputRandom();
+        m_creator.damping = m_damping;
         m_physicsObjects = new List<PhysicsObject>();
 
         m_integrator = Integrator.ExplicitEuler;

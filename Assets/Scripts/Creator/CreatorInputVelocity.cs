@@ -28,7 +28,7 @@ public class CreatorInputVelocity : Creator
             Vector2 currentPos = m_currentPosition;
             Vector2 velocity = (m_startPosition - currentPos) * 2.0f;
             Collider collider = Collider.Create(type, size);
-            physicsObject.Initialize(collider, pos, velocity, mass);
+            physicsObject.Initialize(collider, pos, velocity, mass, damping);
         }
         else if (Input.GetMouseButton(0))
         {

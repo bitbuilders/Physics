@@ -14,14 +14,15 @@ public class PhysicsObject
 	public float damping { get; set; }
 	public float inverseMass { get; set; }
 
-	public void Initialize(Collider collider, Vector2 position, Vector2 velocity, float mass)
+	public void Initialize(Collider collider, Vector2 position, Vector2 velocity, float mass, float damping)
     {
 		m_collider = collider;
 		m_collider.physicsObject = this;
 		
         this.position = position;
-		this.velocity = velocity;
 		inverseMass = (mass == 0.0f) ? 0.0f : (1.0f / mass);
+		this.velocity = velocity * inverseMass;
+        this.damping = damping;
     }
 
     public void Draw(Color color, float duration = 0.0f)

@@ -8,11 +8,13 @@ public static class Integrator
     {
         physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
         physicsObject.velocity = physicsObject.velocity + (physicsObject.inverseMass * physicsObject.force) * dt;
+        physicsObject.velocity = physicsObject.velocity * Mathf.Pow(physicsObject.damping, dt);
     }
 
     public static void SemiImplicitEuler(float dt, PhysicsObject physicsObject)
     {
         physicsObject.velocity = physicsObject.velocity + (physicsObject.inverseMass * physicsObject.force) * dt;
+        physicsObject.velocity = physicsObject.velocity * Mathf.Pow(physicsObject.damping, dt);
         physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
     }
 }

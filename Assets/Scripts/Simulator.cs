@@ -5,7 +5,7 @@ using UnityEngine;
 public class Simulator : MonoBehaviour
 {
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
-    [SerializeField] [Range(0.0f, 50.0f)] float m_gravity = 0.0f;
+    [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
     [SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
@@ -19,7 +19,6 @@ public class Simulator : MonoBehaviour
     void Awake()
     {
         m_creator = new CreatorInputRandom();
-        m_creator.damping = m_damping;
         m_physicsObjects = new List<PhysicsObject>();
 
         m_integrator = Integrator.ExplicitEuler;
@@ -27,10 +26,11 @@ public class Simulator : MonoBehaviour
 
     void Update()
     {
+        m_creator.damping = m_damping;
         float dt = Time.deltaTime;
 
-		// set creator values
-		m_creator.type = m_type;
+        // set creator values
+        m_creator.type = m_type;
 		m_creator.size = m_size;
 		m_creator.mass = m_mass;
 
@@ -38,15 +38,20 @@ public class Simulator : MonoBehaviour
         PhysicsObject newPhysicsObject = m_creator.Update(dt);
         if (newPhysicsObject != null)
         {
-            newPhysicsObject.force = Vector2.down * m_gravity;
             m_physicsObjects.Add(newPhysicsObject);
         }
+
+        Vector2 force = Vector2.zero;
+        force.x = Input.GetAxis("Horizontal") * 5.0f;
+        force.y = Input.GetAxis("Vertical") * 5.0f;
 
         // reset physics object collision state
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
+            physicsObject.force = Vector2.down * m_gravity;
+            physicsObject.force += force;
             physicsObject.StepSimulation(dt, m_integrator);
-			physicsObject.m_collided = false;
+            physicsObject.m_collided = false;
         }
 
 		// check collision detection

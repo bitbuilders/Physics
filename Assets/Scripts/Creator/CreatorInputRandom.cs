@@ -14,7 +14,7 @@ public class CreatorInputRandom : Creator
 			Vector2 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			Collider collider = Collider.Create(type, size);
             Vector2 velocity = Random.insideUnitCircle * 10.0f;
-			physicsObject.Initialize(collider, position, velocity, mass);
+			physicsObject.Initialize(collider, position, velocity, mass, damping);
 		}
 
         return physicsObject;

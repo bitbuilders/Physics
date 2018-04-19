@@ -12,7 +12,7 @@ public class PhysicsObjectSpring : PhysicsObject
     public Vector2 GetSpringForce(float dt)
     {
         Vector2 forcePrev = GetForceFromLink(physicsObjectLinkPrev);
-        Vector2 forceNext = GetForceFromLink(physicsObjectLinkNext) * 0.5f; // Had to reduce by half to get realistic results
+        Vector2 forceNext = GetForceFromLink(physicsObjectLinkNext);
         Vector2 force = forcePrev + forceNext;
 
         return force;

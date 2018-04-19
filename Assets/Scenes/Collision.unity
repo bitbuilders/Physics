@@ -143,11 +143,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_type: 2
   m_gravity: 9.8
-  m_damping: 0.35
+  m_damping: 0.2
   m_size: 1
   m_mass: 0
-  m_springConstant: 3.66
-  m_restLength: 0.1
+  m_springConstant: 5
+  m_restLength: 1
 --- !u!4 &326456915
 Transform:
   m_ObjectHideFlags: 0

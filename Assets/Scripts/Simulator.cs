@@ -9,8 +9,10 @@ public class Simulator : MonoBehaviour
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
     [SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
+    [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
+    [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;
 
-	List<PhysicsObject> m_physicsObjects = null;
+    List<PhysicsObject> m_physicsObjects = null;
     Creator m_creator = null;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
@@ -18,7 +20,7 @@ public class Simulator : MonoBehaviour
 
     void Awake()
     {
-        m_creator = new CreatorInputRandom();
+        m_creator = new CreatorInputSpring();
         m_physicsObjects = new List<PhysicsObject>();
 
         m_integrator = Integrator.ExplicitEuler;
@@ -33,6 +35,10 @@ public class Simulator : MonoBehaviour
         m_creator.type = m_type;
 		m_creator.size = m_size;
 		m_creator.mass = m_mass;
+        m_creator.springConstant = m_springConstant;
+        m_creator.restLength = m_restLength;
+
+        m_creator.physicsObjectLink = (m_physicsObjects.Count == 0) ? null : m_physicsObjects[m_physicsObjects.Count - 1];
 
 		// create physics objects
         PhysicsObject newPhysicsObject = m_creator.Update(dt);
@@ -45,17 +51,26 @@ public class Simulator : MonoBehaviour
         force.x = Input.GetAxis("Horizontal") * 5.0f;
         force.y = Input.GetAxis("Vertical") * 5.0f;
 
-        // reset physics object collision state
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
             physicsObject.force = Vector2.down * m_gravity;
             physicsObject.force += force;
-            physicsObject.StepSimulation(dt, m_integrator);
-            physicsObject.m_collided = false;
         }
 
-		// check collision detection
-		Intersection.Result result = new Intersection.Result();
+        foreach (PhysicsObjectSpring physicsObject in m_physicsObjects)
+        {
+            physicsObject.force += physicsObject.GetSpringForce(dt);
+        }
+
+        // reset physics object collision state
+        foreach (PhysicsObject physicsObject in m_physicsObjects)
+        {
+            physicsObject.m_collided = false;
+            physicsObject.StepSimulation(dt, m_integrator);
+        }
+
+        // check collision detection
+        Intersection.Result result = new Intersection.Result();
 		for (int i = 0; i < m_physicsObjects.Count; i++)
 		{
 			for (int j = i + 1; j < m_physicsObjects.Count; j++)

@@ -25,7 +25,7 @@ public class PhysicsObject
         this.damping = damping;
     }
 
-    public void Draw(Color color, float duration = 0.0f)
+    public virtual void Draw(Color color, float duration = 0.0f)
     {
         m_collider.Draw(position, color, duration);
     }

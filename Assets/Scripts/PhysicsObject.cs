@@ -6,6 +6,7 @@ public class PhysicsObject
 {
 	public Collider m_collider = null;
 	public bool m_collided = false;
+    private float m_mass;
 
 	public Vector2 position { get; set; }
 	public Vector2 velocity { get; set; }
@@ -13,6 +14,15 @@ public class PhysicsObject
 	public Vector2 acceleration { get; set; }
 	public float damping { get; set; }
 	public float inverseMass { get; set; }
+    public float mass
+    {
+        get { return m_mass; }
+        set
+        {
+            m_mass = value;
+            inverseMass = value > 0.0f ? 1.0f / value : 0.0f;
+        }
+    }
 
 	public void Initialize(Collider collider, Vector2 position, Vector2 velocity, float mass, float damping)
     {

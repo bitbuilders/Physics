@@ -12,7 +12,7 @@ public class Simulator : MonoBehaviour
     [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;
 
-    List<PhysicsObject> m_physicsObjects = null;
+    public List<PhysicsObject> m_physicsObjects = null;
     Creator m_creator = null;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
@@ -40,11 +40,19 @@ public class Simulator : MonoBehaviour
 
         m_creator.physicsObjectLink = (m_physicsObjects.Count == 0) ? null : m_physicsObjects[m_physicsObjects.Count - 1];
 
-		// create physics objects
+        // create physics objects
         PhysicsObject newPhysicsObject = m_creator.Update(dt);
         if (newPhysicsObject != null)
         {
             m_physicsObjects.Add(newPhysicsObject);
+
+            if (newPhysicsObject.GetType().Equals(typeof(PhysicsObjectSpring)))
+            {
+                if (m_physicsObjects.Count > 1)
+                {
+                    ((PhysicsObjectSpring) m_physicsObjects[m_physicsObjects.Count - 2]).physicsObjectLinkNext = newPhysicsObject;
+                }
+            }
         }
 
         Vector2 force = Vector2.zero;

@@ -4,15 +4,25 @@ using UnityEngine;
 
 public class PhysicsObjectSpring : PhysicsObject
 {
-    public PhysicsObject physicsObjectLink { get; set; }
-	public float springConstant { get; set; }
+    public PhysicsObject physicsObjectLinkPrev { get; set; }
+    public PhysicsObject physicsObjectLinkNext { get; set; }
+    public float springConstant { get; set; }
 	public float restLength { get; set; }
 
     public Vector2 GetSpringForce(float dt)
     {
-        if (physicsObjectLink == null) return Vector2.zero;
+        Vector2 forcePrev = GetForceFromLink(physicsObjectLinkPrev);
+        Vector2 forceNext = GetForceFromLink(physicsObjectLinkNext) * 0.5f; // Had to reduce by half to get realistic results
+        Vector2 force = forcePrev + forceNext;
 
-        Vector2 springForce = position - physicsObjectLink.position;
+        return force;
+    }
+
+    private Vector2 GetForceFromLink(PhysicsObject link)
+    {
+        if (link == null) return Vector2.zero;
+
+        Vector2 springForce = position - link.position;
         float length = springForce.magnitude;
         length = Mathf.Abs(length - restLength);
         length *= springConstant;
@@ -26,9 +36,9 @@ public class PhysicsObjectSpring : PhysicsObject
         base.Draw(color, duration);
 
         // Draw spring
-        if (physicsObjectLink != null)
+        if (physicsObjectLinkNext != null)
         {
-            Debug.DrawLine(position, physicsObjectLink.position, Color.yellow);
+            Debug.DrawLine(position, physicsObjectLinkNext.position, Color.yellow);
         }
     }
 }

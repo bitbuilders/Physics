@@ -55,6 +55,8 @@ public class SpringLinker : MonoBehaviour
         {
             m_physicsObjectFirst.AddLink(m_physicsObjectSecond);
             m_physicsObjectSecond.AddLink(m_physicsObjectFirst);
+            m_physicsObjectFirst = null;
+            m_physicsObjectSecond = null;
         }
     }
 }

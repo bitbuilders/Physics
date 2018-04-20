@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class PhysicsObjectSpring : PhysicsObject
 {
-    public PhysicsObject physicsObjectLinkPrev { get; set; }
-    public PhysicsObject physicsObjectLinkNext { get; set; }
+    public List<PhysicsObject> physicsObjectLinks = new List<PhysicsObject>();
     public float springConstant { get; set; }
 	public float restLength { get; set; }
 
+    public void AddLink(PhysicsObject physicsObject)
+    {
+        physicsObjectLinks.Add(physicsObject);
+    }
+
     public Vector2 GetSpringForce(float dt)
     {
-        Vector2 forcePrev = GetForceFromLink(physicsObjectLinkPrev);
-        Vector2 forceNext = GetForceFromLink(physicsObjectLinkNext);
-        Vector2 force = forcePrev + forceNext;
+        Vector2 force = Vector2.zero;
+
+        foreach (PhysicsObject physicsObject in physicsObjectLinks)
+        {
+            force += GetForceFromLink(physicsObject);
+        }
 
         return force;
     }
@@ -36,9 +43,12 @@ public class PhysicsObjectSpring : PhysicsObject
         base.Draw(color, duration);
 
         // Draw spring
-        if (physicsObjectLinkNext != null)
+        foreach (PhysicsObject physicsObject in physicsObjectLinks)
         {
-            Debug.DrawLine(position, physicsObjectLinkNext.position, Color.yellow);
+            if (physicsObject != null)
+            {
+                Debug.DrawLine(position, physicsObject.position, Color.yellow);
+            }
         }
     }
 }

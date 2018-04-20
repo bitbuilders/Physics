@@ -123,6 +123,7 @@ GameObject:
   - component: {fileID: 326456915}
   - component: {fileID: 326456914}
   - component: {fileID: 326456916}
+  - component: {fileID: 326456917}
   m_Layer: 0
   m_Name: Simulator
   m_TagString: Untagged
@@ -177,6 +178,17 @@ MonoBehaviour:
   m_damping: 0
   m_springConstant: 0
   m_restLength: 0
+--- !u!114 &326456917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 326456913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9157b29eed697ac4f9bfb3f4aa54ddea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1381793766
 GameObject:
   m_ObjectHideFlags: 0

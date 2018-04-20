@@ -6,7 +6,7 @@ public class PhysicsObject
 {
 	public Collider m_collider = null;
 	public bool m_collided = false;
-    private float m_mass;
+    public float m_mass = 0.0f;
 
 	public Vector2 position { get; set; }
 	public Vector2 velocity { get; set; }
@@ -24,13 +24,14 @@ public class PhysicsObject
         }
     }
 
-	public void Initialize(Collider collider, Vector2 position, Vector2 velocity, float mass, float damping)
+	public virtual void Initialize(Collider collider, Vector2 position, Vector2 velocity, float mass, float damping)
     {
 		m_collider = collider;
 		m_collider.physicsObject = this;
 		
         this.position = position;
 		inverseMass = (mass == 0.0f) ? 0.0f : (1.0f / mass);
+        this.mass = mass;
 		this.velocity = velocity * inverseMass;
         this.damping = damping;
     }

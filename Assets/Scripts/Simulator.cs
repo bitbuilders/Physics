@@ -50,7 +50,7 @@ public class Simulator : MonoBehaviour
             {
                 if (m_physicsObjects.Count > 1)
                 {
-                    ((PhysicsObjectSpring) m_physicsObjects[m_physicsObjects.Count - 2]).physicsObjectLinkNext = newPhysicsObject;
+                    ((PhysicsObjectSpring) m_physicsObjects[m_physicsObjects.Count - 2]).AddLink(newPhysicsObject);
                 }
             }
         }
@@ -63,11 +63,11 @@ public class Simulator : MonoBehaviour
         {
             physicsObject.force = Vector2.down * m_gravity;
             physicsObject.force += force;
-        }
 
-        foreach (PhysicsObjectSpring physicsObject in m_physicsObjects)
-        {
-            physicsObject.force += physicsObject.GetSpringForce(dt);
+            if (physicsObject.GetType() == typeof(PhysicsObjectSpring))
+            {
+                physicsObject.force += ((PhysicsObjectSpring)physicsObject).GetSpringForce(dt);
+            }
         }
 
         // reset physics object collision state

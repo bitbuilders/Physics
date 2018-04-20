@@ -7,7 +7,7 @@ public class Simulator : MonoBehaviour
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
-    [SerializeField] [Range(0.1f,   5.0f)] float m_size = 1.0f;
+    [SerializeField] [Range(0.1f, 5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;

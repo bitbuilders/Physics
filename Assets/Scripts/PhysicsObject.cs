@@ -12,6 +12,7 @@ public class PhysicsObject
 	public Vector2 velocity { get; set; }
 	public Vector2 force { get; set; }
 	public Vector2 acceleration { get; set; }
+    public float restitutionCoef { get; set; }
 	public float damping { get; set; }
 	public float inverseMass { get; set; }
     public float mass

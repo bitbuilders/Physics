@@ -7,12 +7,14 @@ public class Simulator : MonoBehaviour
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
+    [SerializeField][Range(0.0f, 1.0f)] float m_restitutionCoef = 1.0f;
     [SerializeField] [Range(0.1f, 5.0f)] float m_size = 1.0f;
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;
 
     public List<PhysicsObject> m_physicsObjects = null;
+    List<Intersection.Result> m_intersections = null;
     Creator m_creator = null;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
@@ -20,18 +22,20 @@ public class Simulator : MonoBehaviour
 
     void Awake()
     {
-        m_creator = new CreatorInputSpring();
+        m_creator = new CreatorInputVelocity();
         m_physicsObjects = new List<PhysicsObject>();
+        m_intersections = new List<Intersection.Result>();
 
         m_integrator = Integrator.ExplicitEuler;
     }
 
     void Update()
     {
-        m_creator.damping = m_damping;
         float dt = Time.deltaTime;
 
         // set creator values
+        m_creator.restitutionCoef = m_restitutionCoef;
+        m_creator.damping = m_damping;
         m_creator.type = m_type;
 		m_creator.size = m_size;
 		m_creator.mass = m_mass;
@@ -88,15 +92,45 @@ public class Simulator : MonoBehaviour
 				{
 					m_physicsObjects[i].m_collided = true;
 					m_physicsObjects[j].m_collided = true;
+                    m_intersections.Add(result);
 				}
 			}
 		}
 
-		// draw physics objects
+        //Solve intersections
+        foreach (Intersection.Result intersection in m_intersections)
+        {
+            PhysicsObject object1 = intersection.collided1.physicsObject;
+            PhysicsObject object2 = intersection.collided2.physicsObject;
+            //object1.position -= intersection.contactNormal * intersection.distance * 0.5f;
+            object2.position += intersection.contactNormal * intersection.distance * 1.0f;
+
+            Vector2 relativeVelocity = object1.velocity - object2.velocity;
+            float dot = Vector2.Dot(relativeVelocity, intersection.contactNormal);
+            float restitution = (object1.restitutionCoef + object2.restitutionCoef) * 0.5f;
+            Vector2 impulse1 = intersection.contactNormal * (relativeVelocity).magnitude * 1.5f * restitution;
+            Vector2 impulse2 = intersection.contactNormal * (relativeVelocity).magnitude * 1.5f * restitution;
+
+            if (dot > 0.0f)
+            {
+                // Doesn't get called
+                object1.velocity -= impulse1 * object1.inverseMass;
+                object2.velocity += impulse2 * object2.inverseMass;
+            }
+            else if(dot < 0.0f)
+            {
+                object1.velocity += impulse1 * object1.inverseMass;
+                object2.velocity -= impulse2 * object2.inverseMass;
+            }
+        }
+
+        // draw physics objects
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
 			Color color = (physicsObject.m_collided) ? Color.red : Color.white;
 			physicsObject.Draw(color);
 		}
+
+        m_intersections.Clear();
     }
 }

@@ -24,6 +24,7 @@ public class CreatorInputVelocity : Creator
             // use the velocity in the physics object Initialize function
             //Debug.Log(m_startPosition);
             physicsObject = new PhysicsObject();
+            physicsObject.restitutionCoef = restitutionCoef;
             Vector2 pos = m_startPosition;
             Vector2 currentPos = m_currentPosition;
             Vector2 velocity = (m_startPosition - currentPos) * 2.0f;

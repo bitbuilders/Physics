@@ -7,7 +7,10 @@ public static class Intersection
 	public struct Result
 	{
 		public float distance;
-	}
+        public Vector2 contactNormal;
+        public Collider collided1;
+        public Collider collided2;
+    }
 
 	static float Distance(Vector2 p1, Vector2 p2)
 	{
@@ -54,8 +57,13 @@ public static class Intersection
 
         sumRadius *= sumRadius;
         intersects = (distance - sumRadius) <= 0.0f;
-		
-		return (intersects);
+
+        result.distance = distance - sumRadius;
+        result.contactNormal = (collider1.center - collider2.center).normalized;
+        result.collided1 = collider1;
+        result.collided2 = collider2;
+
+        return (intersects);
 	}
 
 	static public bool Intersects(ColliderPoint collider1, ColliderPoint collider2, ref Result result)
@@ -66,7 +74,12 @@ public static class Intersection
 
         intersects = collider1.point == collider2.point;
 
-		return (intersects);
+        result.distance = Distance(collider1.point, collider2.point);
+        result.contactNormal = (collider1.point - collider2.point).normalized;
+        result.collided1 = collider1;
+        result.collided2 = collider2;
+
+        return (intersects);
 	}
 
 	static public bool Intersects(ColliderSphere collider1, ColliderPoint collider2, ref Result result)
@@ -79,6 +92,11 @@ public static class Intersection
 
         sumRadius *= sumRadius;
         intersects = (distance - sumRadius) <= 0.0f;
+
+        result.distance = distance - sumRadius;
+        result.contactNormal = (collider1.center - collider2.point).normalized;
+        result.collided1 = collider1;
+        result.collided2 = collider2;
 
         return (intersects);
 	}

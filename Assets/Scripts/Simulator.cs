@@ -100,27 +100,25 @@ public class Simulator : MonoBehaviour
         //Solve intersections
         foreach (Intersection.Result intersection in m_intersections)
         {
-            PhysicsObject object1 = intersection.collided1.physicsObject;
-            PhysicsObject object2 = intersection.collided2.physicsObject;
-            //object1.position -= intersection.contactNormal * intersection.distance * 0.5f;
-            object2.position += intersection.contactNormal * intersection.distance * 1.0f;
+            PhysicsObject object1 = intersection.collider1.physicsObject;
+            PhysicsObject object2 = intersection.collider2.physicsObject;
+            // Seperation
+            Vector2 newPosition = intersection.contactNormal * (intersection.distance / (object1.inverseMass + object2.inverseMass));
+            object1.position += newPosition;
+            object2.position -= newPosition;
 
             Vector2 relativeVelocity = object1.velocity - object2.velocity;
-            float dot = Vector2.Dot(relativeVelocity, intersection.contactNormal);
-            float restitution = (object1.restitutionCoef + object2.restitutionCoef) * 0.5f;
-            Vector2 impulse1 = intersection.contactNormal * (relativeVelocity).magnitude * 1.5f * restitution;
-            Vector2 impulse2 = intersection.contactNormal * (relativeVelocity).magnitude * 1.5f * restitution;
+            float dot = Vector2.Dot(intersection.contactNormal, relativeVelocity);
+            float restitution = Mathf.Min(object1.restitutionCoef, object2.restitutionCoef);
+            Vector2 impulse = Vector2.zero;
+            // Impulse
+            impulse = intersection.contactNormal * dot;
 
-            if (dot > 0.0f)
+            if (dot < 0.0f)
             {
-                // Doesn't get called
-                object1.velocity -= impulse1 * object1.inverseMass;
-                object2.velocity += impulse2 * object2.inverseMass;
-            }
-            else if(dot < 0.0f)
-            {
-                object1.velocity += impulse1 * object1.inverseMass;
-                object2.velocity -= impulse2 * object2.inverseMass;
+                // Same direction
+                object1.velocity -= impulse * object1.inverseMass;
+                object2.velocity += impulse * object2.inverseMass;
             }
         }
 

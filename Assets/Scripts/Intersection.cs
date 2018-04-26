@@ -8,8 +8,8 @@ public static class Intersection
 	{
 		public float distance;
         public Vector2 contactNormal;
-        public Collider collided1;
-        public Collider collided2;
+        public Collider collider1;
+        public Collider collider2;
     }
 
 	static float Distance(Vector2 p1, Vector2 p2)
@@ -60,8 +60,8 @@ public static class Intersection
 
         result.distance = distance - sumRadius;
         result.contactNormal = (collider1.center - collider2.center).normalized;
-        result.collided1 = collider1;
-        result.collided2 = collider2;
+        result.collider1 = collider1;
+        result.collider2 = collider2;
 
         return (intersects);
 	}
@@ -76,8 +76,8 @@ public static class Intersection
 
         result.distance = Distance(collider1.point, collider2.point);
         result.contactNormal = (collider1.point - collider2.point).normalized;
-        result.collided1 = collider1;
-        result.collided2 = collider2;
+        result.collider1 = collider1;
+        result.collider2 = collider2;
 
         return (intersects);
 	}
@@ -95,8 +95,8 @@ public static class Intersection
 
         result.distance = distance - sumRadius;
         result.contactNormal = (collider1.center - collider2.point).normalized;
-        result.collided1 = collider1;
-        result.collided2 = collider2;
+        result.collider1 = collider1;
+        result.collider2 = collider2;
 
         return (intersects);
 	}

@@ -59,7 +59,7 @@ public static class Intersection
         intersects = (distance - sumRadius) <= 0.0f;
 
         result.distance = distance - sumRadius;
-        result.contactNormal = (collider1.center - collider2.center).normalized;
+        result.contactNormal = (collider2.center - collider1.center).normalized;
         result.collider1 = collider1;
         result.collider2 = collider2;
 
@@ -75,7 +75,7 @@ public static class Intersection
         intersects = collider1.point == collider2.point;
 
         result.distance = Distance(collider1.point, collider2.point);
-        result.contactNormal = (collider1.point - collider2.point).normalized;
+        result.contactNormal = (collider2.point - collider1.point).normalized;
         result.collider1 = collider1;
         result.collider2 = collider2;
 
@@ -94,7 +94,7 @@ public static class Intersection
         intersects = (distance - sumRadius) <= 0.0f;
 
         result.distance = distance - sumRadius;
-        result.contactNormal = (collider1.center - collider2.point).normalized;
+        result.contactNormal = (collider2.point - collider1.center).normalized;
         result.collider1 = collider1;
         result.collider2 = collider2;
 

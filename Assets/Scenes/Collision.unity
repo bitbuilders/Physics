@@ -142,7 +142,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1aa149b71fa20b44b1c56c94268355d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_type: 1
+  m_type: 0
   m_gravity: 0
   m_damping: 1
   m_restitutionCoef: 1

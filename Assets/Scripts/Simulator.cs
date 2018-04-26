@@ -102,21 +102,19 @@ public class Simulator : MonoBehaviour
         {
             PhysicsObject object1 = intersection.collider1.physicsObject;
             PhysicsObject object2 = intersection.collider2.physicsObject;
-            // Seperation
-            Vector2 newPosition = intersection.contactNormal * (intersection.distance / (object1.inverseMass + object2.inverseMass));
-            object1.position += newPosition;
-            object2.position -= newPosition;
+            Vector2 separation = intersection.contactNormal * (intersection.distance / (object1.inverseMass + object2.inverseMass));
+            object1.position += separation * object1.inverseMass;
+            object2.position -= separation * object2.inverseMass;
 
-            Vector2 relativeVelocity = object1.velocity - object2.velocity;
-            float dot = Vector2.Dot(intersection.contactNormal, relativeVelocity);
+            Vector2 relativeVelocity = object2.velocity - object1.velocity;
+            float velNorm = Vector2.Dot(relativeVelocity, intersection.contactNormal);
             float restitution = Mathf.Min(object1.restitutionCoef, object2.restitutionCoef);
             Vector2 impulse = Vector2.zero;
-            // Impulse
-            impulse = intersection.contactNormal * dot;
+            float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass); 
+            impulse = intersection.contactNormal * j;
 
-            if (dot < 0.0f)
+            if (velNorm < 0.0f) // Opposite direction
             {
-                // Same direction
                 object1.velocity -= impulse * object1.inverseMass;
                 object2.velocity += impulse * object2.inverseMass;
             }

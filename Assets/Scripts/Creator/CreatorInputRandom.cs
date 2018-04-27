@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CreatorInputRandom : Creator
 {
-	public override PhysicsObject Update(float dt)
+	public PhysicsObject UpdateCreator(float dt)
     {
         PhysicsObject physicsObject = null;
 

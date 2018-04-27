@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CreatorInputSpring : Creator
 {
-	public override PhysicsObject Update(float dt)
+	public PhysicsObject UpdateCreator(float dt)
     {
         PhysicsObjectSpring physicsObject = null;
 

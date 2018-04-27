@@ -7,7 +7,7 @@ public class CreatorInputVelocity : Creator
     Vector2 m_startPosition;
     Vector2 m_currentPosition;
 
-    public override PhysicsObject Update(float dt)
+    public PhysicsObject UpdateCreator(float dt)
     {
         PhysicsObject physicsObject = null;
 

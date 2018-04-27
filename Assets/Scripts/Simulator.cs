@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Simulator : MonoBehaviour
 {
+    [SerializeField] Creator.CreatorType m_creatorType = Creator.CreatorType.POINT;
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
@@ -22,7 +23,8 @@ public class Simulator : MonoBehaviour
 
     void Awake()
     {
-        m_creator = new CreatorInputVelocity();
+        m_creator = new Creator();
+        m_creator.Initialize();
         m_physicsObjects = new List<PhysicsObject>();
         m_intersections = new List<Intersection.Result>();
 
@@ -32,10 +34,11 @@ public class Simulator : MonoBehaviour
     void Update()
     {
         float dt = Time.deltaTime;
-
+        
         // set creator values
         m_creator.restitutionCoef = m_restitutionCoef;
         m_creator.damping = m_damping;
+        m_creator.creatorType = m_creatorType;
         m_creator.type = m_type;
 		m_creator.size = m_size;
 		m_creator.mass = m_mass;

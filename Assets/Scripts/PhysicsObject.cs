@@ -9,7 +9,8 @@ public class PhysicsObject
     public float m_mass = 0.0f;
 
 	public Vector2 position { get; set; }
-	public Vector2 velocity { get; set; }
+	public Vector2 previousPosition { get; set; }
+    public Vector2 velocity { get; set; }
 	public Vector2 force { get; set; }
 	public Vector2 acceleration { get; set; }
     public float restitutionCoef { get; set; }
@@ -31,6 +32,7 @@ public class PhysicsObject
 		m_collider.physicsObject = this;
 		
         this.position = position;
+        previousPosition = position;
 		inverseMass = (mass == 0.0f) ? 0.0f : (1.0f / mass);
         this.mass = mass;
 		this.velocity = velocity * inverseMass;

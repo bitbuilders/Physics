@@ -60,6 +60,7 @@ public static class Intersection
 
         result.distance = distance - sumRadius;
         result.contactNormal = (collider2.center - collider1.center).normalized;
+        //Debug.DrawLine(collider1.center, collider1.center + result.contactNormal, Color.blue, 2.0f);
         result.collider1 = collider1;
         result.collider2 = collider2;
 
@@ -167,18 +168,23 @@ public static class Intersection
         float b = 2.0f * (localP1.x * (lineLocal.x) + localP1.y * (lineLocal.y));
         float c = (localP1.x * localP1.x) + (localP1.y * localP1.y) - (collider2.radius * collider2.radius);
         float delta = b * b - (4.0f * a * c);
-
+        
         if (delta < 0)
         {
+            result.distance = 0.0f;
+            result.contactNormal = Vector2.zero;
+
             intersects = false;
         }
         else if (delta == 0)
         {
             float u = -b / (2.0f * a);
 
-            Debug.Log("u = " + u);
-
+            if (u > 1.0f || u < 0.0f)
+                return false;
+            
             result.distance = 0.0f;
+            result.contactNormal = (collider2.center - (u * line + collider1.point1)).normalized;
 
             intersects = true;
         }
@@ -189,18 +195,16 @@ public static class Intersection
             float u1 = (-b + srtDelta) / (2.0f * a);
             float u2 = (-b - srtDelta) / (2.0f * a);
 
-            //Debug.Log("u1 = " + u1 + " u2 = " + u2);
+            if ((u1 > 1.0f || u1 < 0.0f) && (u2 > 1.0f || u2 < 0.0f))
+                return false;
 
-            Vector2 midpoint = ((line * u2) - (line * u1)) * 0.5f + (line * u1);
-            Debug.Log(u1);
-            result.distance = (midpoint - collider2.center).magnitude;
-
-            //Debug.Log(result.distance);
+            Vector2 midpoint = (u2 + u1) * 0.5f * line + collider1.point1;
+            result.contactNormal = (collider2.center - midpoint).normalized;
+            result.distance = ((collider2.center) - midpoint).magnitude - collider2.radius;
+            //Debug.DrawLine(midpoint, midpoint + result.contactNormal, Color.blue, 2.0f);
 
             intersects = true;
         }
-
-        result.contactNormal = collider1.center + collider1.normal;
         result.collider1 = collider1;
         result.collider2 = collider2;
 
@@ -211,7 +215,27 @@ public static class Intersection
     {
         bool intersects = false;
 
+        Vector2 a1 = collider1.point1;
+        Vector2 a2 = collider1.point2;
+        Vector2 b1 = collider2.physicsObject.previousPosition;
+        Vector2 b2 = collider2.physicsObject.position;
+        Vector2 line = a2 - a1;
 
+        // If infinite lines (denom != 0)
+        //float denom = ((b2.y - b1.y) * (a2.x - a1.x)) - ((b2.x - b1.x) * a2.y - a2.y);
+
+        float uA = ((b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x)) /
+                   ((b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y));
+        float uB = ((a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x)) /
+                   ((b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y));
+
+        intersects = (uA >= 0.0f && uA <= 1.0f) && (uB >= 0.0f && uB <= 1.0f);
+
+        Vector2 pointOnLine = (line * uA) + collider1.point1;
+        result.contactNormal = collider1.normal;
+        result.distance = -(collider2.physicsObject.position - pointOnLine).magnitude;
+        result.collider1 = collider1;
+        result.collider2 = collider2;
 
         return (intersects);
     }

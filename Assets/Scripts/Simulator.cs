@@ -131,27 +131,9 @@ public class Simulator : MonoBehaviour
         {
 			Color color = (physicsObject.m_collided) ? Color.red : Color.white;
 			physicsObject.Draw(color);
+            physicsObject.previousPosition = physicsObject.position;
 		}
 
         m_intersections.Clear();
     }
-
-    //void UpdateCreatorType()
-    //{
-    //    switch (m_creatorType)
-    //    {
-    //        case Creator.CreatorType.POINT:
-    //            m_creator = m_creatorPoint;
-    //            break;
-    //        case Creator.CreatorType.RANDOM:
-    //            m_creator = m_creatorRandom;
-    //            break;
-    //        case Creator.CreatorType.SPRING:
-    //            m_creator = m_creatorSpring;
-    //            break;
-    //        case Creator.CreatorType.VELOCITY:
-    //            m_creator = m_creatorVelocity;
-    //            break;
-    //    }
-    //}
 }

@@ -145,7 +145,7 @@ MonoBehaviour:
   m_creatorType: 0
   m_type: 3
   m_gravity: 9.8
-  m_damping: 0.5
+  m_damping: 1
   m_restitutionCoef: 1
   m_size: 1
   m_mass: 0

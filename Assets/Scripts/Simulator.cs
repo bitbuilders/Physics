@@ -17,14 +17,17 @@ public class Simulator : MonoBehaviour
     public List<PhysicsObject> m_physicsObjects = null;
     List<Intersection.Result> m_intersections = null;
     Creator m_creator = null;
+    List<Creator> m_creatorTypes;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
     IntegratorDelegate m_integrator;
 
     void Awake()
     {
-        m_creator = new Creator();
-        m_creator.Initialize();
+        m_creatorTypes = new List<Creator>() {
+            new CreatorInputLine(), new CreatorInputPoint(), new CreatorInputRandom(),
+            new CreatorInputSpring(), new CreatorInputVelocity() };
+        m_creator = m_creatorTypes[(int)m_creatorType];
         m_physicsObjects = new List<PhysicsObject>();
         m_intersections = new List<Intersection.Result>();
 
@@ -34,11 +37,11 @@ public class Simulator : MonoBehaviour
     void Update()
     {
         float dt = Time.deltaTime;
-        
+
         // set creator values
+        m_creator = m_creatorTypes[(int)m_creatorType];
         m_creator.restitutionCoef = m_restitutionCoef;
         m_creator.damping = m_damping;
-        m_creator.creatorType = m_creatorType;
         m_creator.type = m_type;
 		m_creator.size = m_size;
 		m_creator.mass = m_mass;
@@ -53,9 +56,9 @@ public class Simulator : MonoBehaviour
         {
             m_physicsObjects.Add(newPhysicsObject);
 
-            if (newPhysicsObject.GetType().Equals(typeof(PhysicsObjectSpring)))
+            if (newPhysicsObject.GetType() == typeof(PhysicsObjectSpring))
             {
-                if (m_physicsObjects.Count > 1)
+                if (m_physicsObjects.Count > 1 && m_physicsObjects[m_physicsObjects.Count - 2].GetType() == typeof(PhysicsObjectSpring))
                 {
                     ((PhysicsObjectSpring) m_physicsObjects[m_physicsObjects.Count - 2]).AddLink(newPhysicsObject);
                 }
@@ -63,8 +66,8 @@ public class Simulator : MonoBehaviour
         }
 
         Vector2 force = Vector2.zero;
-        force.x = Input.GetAxis("Horizontal") * 5.0f;
-        force.y = Input.GetAxis("Vertical") * 5.0f;
+        force.x = Input.GetAxis("Horizontal") * 20.0f;
+        force.y = Input.GetAxis("Vertical") * 20.0f;
 
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
@@ -132,4 +135,23 @@ public class Simulator : MonoBehaviour
 
         m_intersections.Clear();
     }
+
+    //void UpdateCreatorType()
+    //{
+    //    switch (m_creatorType)
+    //    {
+    //        case Creator.CreatorType.POINT:
+    //            m_creator = m_creatorPoint;
+    //            break;
+    //        case Creator.CreatorType.RANDOM:
+    //            m_creator = m_creatorRandom;
+    //            break;
+    //        case Creator.CreatorType.SPRING:
+    //            m_creator = m_creatorSpring;
+    //            break;
+    //        case Creator.CreatorType.VELOCITY:
+    //            m_creator = m_creatorVelocity;
+    //            break;
+    //    }
+    //}
 }

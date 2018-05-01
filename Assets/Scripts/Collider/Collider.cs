@@ -9,6 +9,7 @@ public abstract class Collider
 		POINT,
 		SPHERE,
 		AABB,
+        LINE,
 	}
 
 	public PhysicsObject physicsObject { get; set; }
@@ -41,4 +42,15 @@ public abstract class Collider
 
 		return collider;
 	}
+
+    public static Collider Create(eType type, Vector2 point1, Vector2 point2)
+    {
+        Collider collider = null;
+
+        ColliderLine colliderLine = new ColliderLine();
+        colliderLine.Initialize(point1, point2);
+        collider = colliderLine;
+
+        return collider;
+    }
 }

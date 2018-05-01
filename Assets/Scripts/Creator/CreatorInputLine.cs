@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CreatorInputVelocity : Creator
+public class CreatorInputLine : Creator
 {
     Vector2 m_startPosition;
     Vector2 m_currentPosition;
@@ -17,24 +17,18 @@ public class CreatorInputVelocity : Creator
         }
         else if (Input.GetMouseButtonUp(0))
         {
-            // create physics object
-            // position = start position
-            // velocity = start position - position
-            // collider
-            // use the velocity in the physics object Initialize function
-            //Debug.Log(m_startPosition);
             physicsObject = new PhysicsObject();
             physicsObject.restitutionCoef = restitutionCoef;
-            Vector2 pos = m_startPosition;
             Vector2 currentPos = m_currentPosition;
-            Vector2 velocity = (m_startPosition - currentPos) * 2.0f;
-            Collider collider = Collider.Create(type, size);
+            Vector2 velocity = Vector2.zero;
+            Collider collider = Collider.Create(type, m_startPosition, currentPos);
+            Vector2 pos = ((ColliderLine)collider).center;
             physicsObject.Initialize(collider, pos, velocity, mass, damping);
         }
         else if (Input.GetMouseButton(0))
         {
             m_currentPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Debug.DrawLine(m_startPosition, m_currentPosition, Color.blue);
+            Debug.DrawLine(m_startPosition, m_currentPosition, Color.white);
         }
 
         return physicsObject;

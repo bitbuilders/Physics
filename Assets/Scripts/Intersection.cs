@@ -153,4 +153,95 @@ public static class Intersection
 
         return (intersects);
 	}
+
+    static public bool Intersects(ColliderLine collider1, ColliderSphere collider2, ref Result result)
+    {
+        bool intersects = false;
+
+        Vector2 localP1 = collider1.point1 - collider2.center;
+        Vector2 localP2 = collider1.point2 - collider2.center;
+        Vector2 lineLocal = localP2 - localP1;
+        Vector2 line = collider1.point2 - collider1.point1;
+
+        float a = (lineLocal.x) * (lineLocal.x) + (lineLocal.y) * (lineLocal.y);
+        float b = 2.0f * (localP1.x * (lineLocal.x) + localP1.y * (lineLocal.y));
+        float c = (localP1.x * localP1.x) + (localP1.y * localP1.y) - (collider2.radius * collider2.radius);
+        float delta = b * b - (4.0f * a * c);
+
+        if (delta < 0)
+        {
+            intersects = false;
+        }
+        else if (delta == 0)
+        {
+            float u = -b / (2.0f * a);
+
+            Debug.Log("u = " + u);
+
+            result.distance = 0.0f;
+
+            intersects = true;
+        }
+        else
+        {
+            float srtDelta = Mathf.Sqrt(delta);
+
+            float u1 = (-b + srtDelta) / (2.0f * a);
+            float u2 = (-b - srtDelta) / (2.0f * a);
+
+            //Debug.Log("u1 = " + u1 + " u2 = " + u2);
+
+            Vector2 midpoint = ((line * u2) - (line * u1)) * 0.5f + (line * u1);
+            Debug.Log(u1);
+            result.distance = (midpoint - collider2.center).magnitude;
+
+            //Debug.Log(result.distance);
+
+            intersects = true;
+        }
+
+        result.contactNormal = collider1.center + collider1.normal;
+        result.collider1 = collider1;
+        result.collider2 = collider2;
+
+        return (intersects);
+    }
+
+    static public bool Intersects(ColliderLine collider1, ColliderPoint collider2, ref Result result)
+    {
+        bool intersects = false;
+
+
+
+        return (intersects);
+    }
+
+    static public bool Intersects(ColliderLine collider1, ColliderLine collider2, ref Result result)
+    {
+        bool intersects = false;
+
+        Vector2 a1 = collider1.point1;
+        Vector2 a2 = collider1.point2;
+        Vector2 b1 = collider2.point1;
+        Vector2 b2 = collider2.point2;
+
+        // If infinite lines (denom != 0)
+        //float denom = ((b2.y - b1.y) * (a2.x - a1.x)) - ((b2.x - b1.x) * a2.y - a2.y);
+
+        float uA = ((b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x)) /
+                   ((b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y));
+        float uB = ((a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x)) /
+                   ((b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y));
+
+        // If uA between 0 and 1 then B is hitting line A (0.5 means its directly in middle of A)
+        // Same with uB
+
+        intersects = (uA >= 0.0f && uA <= 1.0f) && (uB >= 0.0f && uB <= 1.0f);
+
+        result.collider1 = collider1;
+        result.collider2 = collider2;
+        result.contactNormal = Vector2.zero;
+
+        return (intersects);
+    }
 }

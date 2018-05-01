@@ -195,15 +195,44 @@ public static class Intersection
             float u1 = (-b + srtDelta) / (2.0f * a);
             float u2 = (-b - srtDelta) / (2.0f * a);
 
-            if ((u1 > 1.0f || u1 < 0.0f) && (u2 > 1.0f || u2 < 0.0f))
-                return false;
-
-            Vector2 midpoint = (u2 + u1) * 0.5f * line + collider1.point1;
             result.contactNormal = collider1.normal;
+            Vector2 midpoint = (u2 + u1) * 0.5f * line + collider1.point1;
             result.distance = ((collider2.center) - midpoint).magnitude - collider2.radius;
-            //Debug.DrawLine(midpoint, midpoint + result.contactNormal, Color.blue, 2.0f);
 
             intersects = true;
+
+            if (u1 > 1.0f || u1 < 0.0f)
+            {
+                if (u2 <= 1.0f && u2 >= 0.0f)
+                {
+                    Vector2 linepoint = u2 * line + collider1.point1;
+                    result.contactNormal = (collider2.center - linepoint).normalized;
+                    result.distance = (collider2.center - linepoint).magnitude - collider2.radius;
+                }
+                else
+                {
+                    intersects = false;
+                }
+            }
+            else if (u2 > 1.0f || u2 < 0.0f)
+            {
+                if (u1 <= 1.0f && u1 >= 0.0f)
+                {
+                    Vector2 linepoint = u1 * line + collider1.point1;
+                    result.contactNormal = (collider2.center - linepoint).normalized;
+                    result.distance = (collider2.center - linepoint).magnitude - collider2.radius;
+                }
+                else
+                {
+                    intersects = false;
+                }
+            }
+            else if ((u2 > 1.0f || u2 < 0.0f) && (u1 > 1.0f || u1 < 0.0f))
+            {
+                intersects = false;
+            }
+
+            //Debug.DrawLine(midpoint, midpoint + result.contactNormal, Color.blue, 2.0f);
         }
         result.collider1 = collider1;
         result.collider2 = collider2;

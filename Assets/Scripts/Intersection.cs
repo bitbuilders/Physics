@@ -184,7 +184,7 @@ public static class Intersection
                 return false;
             
             result.distance = 0.0f;
-            result.contactNormal = (collider2.center - (u * line + collider1.point1)).normalized;
+            result.contactNormal = collider1.normal;
 
             intersects = true;
         }
@@ -199,7 +199,7 @@ public static class Intersection
                 return false;
 
             Vector2 midpoint = (u2 + u1) * 0.5f * line + collider1.point1;
-            result.contactNormal = (collider2.center - midpoint).normalized;
+            result.contactNormal = collider1.normal;
             result.distance = ((collider2.center) - midpoint).magnitude - collider2.radius;
             //Debug.DrawLine(midpoint, midpoint + result.contactNormal, Color.blue, 2.0f);
 

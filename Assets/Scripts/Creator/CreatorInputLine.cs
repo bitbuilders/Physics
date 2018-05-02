@@ -23,7 +23,7 @@ public class CreatorInputLine : Creator
             Vector2 velocity = Vector2.zero;
             Collider collider = Collider.Create(type, m_startPosition, currentPos);
             Vector2 pos = ((ColliderLine)collider).center;
-            physicsObject.Initialize(collider, pos, velocity, mass, damping);
+            physicsObject.Initialize(collider, pos, velocity, 0.0f, damping);
         }
         else if (Input.GetMouseButton(0))
         {

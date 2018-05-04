@@ -118,7 +118,7 @@ public class Simulator : MonoBehaviour
             Vector2 impulse = Vector2.zero;
             float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass); 
             impulse = intersection.contactNormal * j;
-
+            
             if (velNorm < 0.0f) // Opposite direction
             {
                 object1.velocity -= impulse * object1.inverseMass;

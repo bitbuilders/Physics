@@ -7,6 +7,7 @@ public class Simulator : MonoBehaviour
     [SerializeField] Creator.CreatorType m_creatorType = Creator.CreatorType.POINT;
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
+    [SerializeField][Range(0.0f, 1.0f)] float m_restingVelocityMin = 0.015f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_restitutionCoef = 1.0f;
     [SerializeField] [Range(0.1f, 5.0f)] float m_size = 1.0f;
@@ -83,8 +84,22 @@ public class Simulator : MonoBehaviour
         // reset physics object collision state
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
-            physicsObject.m_collided = false;
-            physicsObject.StepSimulation(dt, m_integrator);
+            physicsObject.state = physicsObject.state & ~PhysicsObject.eState.COLLIDED;
+            if ((physicsObject.state & PhysicsObject.eState.AWAKE) == PhysicsObject.eState.AWAKE)
+            {
+                physicsObject.StepSimulation(dt, m_integrator);
+            }
+        }
+
+        // check if objects are asleep
+        foreach (PhysicsObject physicsObject in m_physicsObjects)
+        {
+            float bias = Mathf.Pow(0.1f, dt);
+            physicsObject.dynamicMotion = (bias * physicsObject.dynamicMotion) + ((1.0f - bias) * physicsObject.velocity.magnitude * dt);
+            if (physicsObject.dynamicMotion < m_restingVelocityMin)
+            {
+                physicsObject.SetAwake(false);
+            }
         }
 
         // check collision detection
@@ -94,10 +109,15 @@ public class Simulator : MonoBehaviour
 			for (int j = i + 1; j < m_physicsObjects.Count; j++)
 			{
 				bool intersects = m_physicsObjects[i].Intersects(m_physicsObjects[j], ref result);
-				if (intersects)
+                bool bothAsleep = !m_physicsObjects[i].Awake && !m_physicsObjects[j].Awake;
+				if (!bothAsleep && intersects)
 				{
-					m_physicsObjects[i].m_collided = true;
-					m_physicsObjects[j].m_collided = true;
+                    bool oneIsStatic = (m_physicsObjects[i].inverseMass == 0.0f || m_physicsObjects[j].inverseMass == 0.0f);
+                    if (!m_physicsObjects[i].Awake && !oneIsStatic) m_physicsObjects[i].SetAwake(true);
+                    else if (!m_physicsObjects[j].Awake && !oneIsStatic) m_physicsObjects[j].SetAwake(true);
+
+                    m_physicsObjects[i].state |= PhysicsObject.eState.COLLIDED;
+					m_physicsObjects[j].state |= PhysicsObject.eState.COLLIDED;
                     m_intersections.Add(result);
 				}
 			}
@@ -115,6 +135,10 @@ public class Simulator : MonoBehaviour
             Vector2 relativeVelocity = object2.velocity - object1.velocity;
             float velNorm = Vector2.Dot(relativeVelocity, intersection.contactNormal);
             float restitution = Mathf.Min(object1.restitutionCoef, object2.restitutionCoef);
+            if (relativeVelocity.magnitude < 0.1f)
+            {
+                restitution = 0.0f;
+            }
             Vector2 impulse = Vector2.zero;
             float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass); 
             impulse = intersection.contactNormal * j;
@@ -129,7 +153,12 @@ public class Simulator : MonoBehaviour
         // draw physics objects
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
-			Color color = (physicsObject.m_collided) ? Color.red : Color.white;
+            bool red = (physicsObject.state & PhysicsObject.eState.COLLIDED) == PhysicsObject.eState.COLLIDED;
+            bool blue = !physicsObject.Awake;
+            Color color;
+            if (red) color = Color.red;
+            else if (blue) color = Color.blue;
+            else color = Color.white;
 			physicsObject.Draw(color);
             physicsObject.previousPosition = physicsObject.position;
 		}

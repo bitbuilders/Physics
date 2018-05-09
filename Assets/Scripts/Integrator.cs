@@ -18,7 +18,7 @@ public static class Integrator
         physicsObject.acceleration = physicsObject.force * physicsObject.inverseMass;
         physicsObject.velocity = physicsObject.velocity + (physicsObject.inverseMass * physicsObject.force) * dt;
         physicsObject.velocity = physicsObject.velocity * Mathf.Pow(physicsObject.damping, dt);
-        physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
         physicsObject.velocity = physicsObject.velocity + physicsObject.acceleration * dt;
+        physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
     }
 }

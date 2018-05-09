@@ -14,11 +14,15 @@ public class Simulator : MonoBehaviour
 	[SerializeField] [Range(0.0f, 100.0f)] float m_mass = 1.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;
+    [SerializeField] [Range(0.0f, 10.0f)] float m_querySize = 2.0f;
 
     public List<PhysicsObject> m_physicsObjects = null;
+    List<PhysicsObject> m_queriedObjects = null;
     List<Intersection.Result> m_intersections = null;
     Creator m_creator = null;
+    BroadPhase m_broadPhase;
     List<Creator> m_creatorTypes;
+    AABB m_queryRange;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
     IntegratorDelegate m_integrator;
@@ -31,6 +35,9 @@ public class Simulator : MonoBehaviour
         m_creator = m_creatorTypes[(int)m_creatorType];
         m_physicsObjects = new List<PhysicsObject>();
         m_intersections = new List<Intersection.Result>();
+        m_queriedObjects = new List<PhysicsObject>();
+        m_broadPhase = new QuadTree();
+        m_queryRange = new AABB(Input.mousePosition, new Vector2(m_querySize, m_querySize));
 
         m_integrator = Integrator.ExplicitEuler;
     }
@@ -48,6 +55,12 @@ public class Simulator : MonoBehaviour
 		m_creator.mass = m_mass;
         m_creator.springConstant = m_springConstant;
         m_creator.restLength = m_restLength;
+
+        m_queryRange.size = new Vector2(m_querySize, m_querySize);
+        Vector2 size = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height) * 1.495f);
+        AABB boundary = new AABB(Vector2.zero, size);
+        m_broadPhase.Build(boundary, ref m_physicsObjects);
+        m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
 
         m_creator.physicsObjectLink = (m_physicsObjects.Count == 0) ? null : m_physicsObjects[m_physicsObjects.Count - 1];
 
@@ -164,5 +177,16 @@ public class Simulator : MonoBehaviour
 		}
 
         m_intersections.Clear();
+
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        m_queryRange.center = mousePos;
+        m_queryRange.Draw(Color.green, 0.0f);
+        m_broadPhase.Draw(Color.green, 0.0f);
+        foreach (PhysicsObject physicsObject in m_queriedObjects)
+        {
+            Debug.DrawLine(mousePos, physicsObject.position, Color.red);
+        }
+
+        m_queriedObjects.Clear();
     }
 }

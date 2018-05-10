@@ -117,24 +117,30 @@ public class Simulator : MonoBehaviour
 
         // check collision detection
         Intersection.Result result = new Intersection.Result();
-		for (int i = 0; i < m_physicsObjects.Count; i++)
-		{
-			for (int j = i + 1; j < m_physicsObjects.Count; j++)
-			{
-				bool intersects = m_physicsObjects[i].Intersects(m_physicsObjects[j], ref result);
-                bool bothAsleep = !m_physicsObjects[i].Awake && !m_physicsObjects[j].Awake;
-				if (!bothAsleep && intersects)
-				{
-                    bool oneIsStatic = (m_physicsObjects[i].inverseMass == 0.0f || m_physicsObjects[j].inverseMass == 0.0f);
-                    if (!m_physicsObjects[i].Awake && !oneIsStatic) m_physicsObjects[i].SetAwake(true);
-                    else if (!m_physicsObjects[j].Awake && !oneIsStatic) m_physicsObjects[j].SetAwake(true);
+        foreach (PhysicsObject physicsObject in m_physicsObjects)
+        {
+            AABB range = new AABB(physicsObject.position, new Vector2(4.0f, 4.0f));
+            m_queriedObjects.Clear();
+            m_broadPhase.Query(range, ref m_queriedObjects);
+            foreach (PhysicsObject queriedPhysicsObject in m_queriedObjects)
+            {
+                if (physicsObject != queriedPhysicsObject)
+                {
+                    bool intersects = physicsObject.Intersects(queriedPhysicsObject, ref result);
+                    bool bothAsleep = !physicsObject.Awake && !queriedPhysicsObject.Awake;
+                    if (!bothAsleep && intersects)
+                    {
+                        bool oneIsStatic = (physicsObject.inverseMass == 0.0f || queriedPhysicsObject.inverseMass == 0.0f);
+                        if (!physicsObject.Awake && !oneIsStatic) physicsObject.SetAwake(true);
+                        else if (!queriedPhysicsObject.Awake && !oneIsStatic) queriedPhysicsObject.SetAwake(true);
 
-                    m_physicsObjects[i].state |= PhysicsObject.eState.COLLIDED;
-					m_physicsObjects[j].state |= PhysicsObject.eState.COLLIDED;
-                    m_intersections.Add(result);
-				}
-			}
-		}
+                        physicsObject.state |= PhysicsObject.eState.COLLIDED;
+                        queriedPhysicsObject.state |= PhysicsObject.eState.COLLIDED;
+                        m_intersections.Add(result);
+                    }
+                }
+            }
+        }
 
         //Solve intersections
         foreach (Intersection.Result intersection in m_intersections)
@@ -178,15 +184,15 @@ public class Simulator : MonoBehaviour
 
         m_intersections.Clear();
 
+        m_broadPhase.Draw(Color.green, 0.0f);
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         m_queryRange.center = mousePos;
         m_queryRange.Draw(Color.green, 0.0f);
-        m_broadPhase.Draw(Color.green, 0.0f);
+        m_queriedObjects.Clear();
+        m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
         foreach (PhysicsObject physicsObject in m_queriedObjects)
         {
             Debug.DrawLine(mousePos, physicsObject.position, Color.red);
         }
-
-        m_queriedObjects.Clear();
     }
 }

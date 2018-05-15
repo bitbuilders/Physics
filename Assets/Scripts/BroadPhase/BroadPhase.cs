@@ -4,6 +4,12 @@ using UnityEngine;
 
 public abstract class BroadPhase
 {
+    public enum eType
+    {
+        BVH,
+        QUAD_TREE
+    }
+
     public abstract void Build(AABB boundary, ref List<PhysicsObject> physicsObjects);
     public abstract void Query(AABB range, ref List<PhysicsObject> physicsObjects);
     public abstract void Draw(Color color, float duration = 0.0f);

@@ -6,6 +6,7 @@ public class Simulator : MonoBehaviour
 {
     [SerializeField] Creator.CreatorType m_creatorType = Creator.CreatorType.POINT;
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
+    [SerializeField] BroadPhase.eType m_broadPhaseType = BroadPhase.eType.BVH;
     [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_restingVelocityMin = 0.015f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
@@ -15,6 +16,7 @@ public class Simulator : MonoBehaviour
     [SerializeField] [Range(0.0f, 10.0f)] float m_springConstant = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_restLength = 2.0f;
     [SerializeField] [Range(0.0f, 10.0f)] float m_querySize = 2.0f;
+    [SerializeField] int m_count = 0;
 
     public List<PhysicsObject> m_physicsObjects = null;
     List<PhysicsObject> m_queriedObjects = null;
@@ -22,6 +24,7 @@ public class Simulator : MonoBehaviour
     Creator m_creator = null;
     BroadPhase m_broadPhase;
     List<Creator> m_creatorTypes;
+    List<BroadPhase> m_phaseTypes;
     AABB m_queryRange;
 
     public delegate void IntegratorDelegate(float dt, PhysicsObject physicsObject);
@@ -32,11 +35,12 @@ public class Simulator : MonoBehaviour
         m_creatorTypes = new List<Creator>() {
             new CreatorInputLine(), new CreatorInputPoint(), new CreatorInputRandom(),
             new CreatorInputSpring(), new CreatorInputVelocity() };
+        m_phaseTypes = new List<BroadPhase>() { new BVH(), new QuadTree() };
+        m_broadPhase = m_phaseTypes[(int)m_broadPhaseType];
         m_creator = m_creatorTypes[(int)m_creatorType];
         m_physicsObjects = new List<PhysicsObject>();
         m_intersections = new List<Intersection.Result>();
         m_queriedObjects = new List<PhysicsObject>();
-        m_broadPhase = new QuadTree();
         m_queryRange = new AABB(Input.mousePosition, new Vector2(m_querySize, m_querySize));
 
         m_integrator = Integrator.ExplicitEuler;
@@ -55,6 +59,7 @@ public class Simulator : MonoBehaviour
 		m_creator.mass = m_mass;
         m_creator.springConstant = m_springConstant;
         m_creator.restLength = m_restLength;
+        m_count = m_physicsObjects.Count;
 
         m_queryRange.size = new Vector2(m_querySize, m_querySize);
         Vector2 size = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height) * 1.495f);

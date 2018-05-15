@@ -142,17 +142,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1aa149b71fa20b44b1c56c94268355d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_creatorType: 1
+  m_creatorType: 2
   m_type: 1
+  m_broadPhaseType: 0
   m_gravity: 0
   m_restingVelocityMin: 0.015
-  m_damping: 0.5
+  m_damping: 0.2
   m_restitutionCoef: 1
   m_size: 0.5
   m_mass: 1
   m_springConstant: 5
   m_restLength: 1
   m_querySize: 5
+  m_count: 0
 --- !u!4 &326456915
 Transform:
   m_ObjectHideFlags: 0

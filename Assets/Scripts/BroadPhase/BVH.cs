@@ -18,6 +18,7 @@ public class BVH : BroadPhase
 
     public override void Query(AABB range, ref List<PhysicsObject> physicsObjects)
     {
+        m_node.ResetTouch();
         m_node.Query(range, ref physicsObjects);
     }
 }

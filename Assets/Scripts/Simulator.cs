@@ -65,7 +65,6 @@ public class Simulator : MonoBehaviour
         Vector2 size = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height) * 1.495f);
         AABB boundary = new AABB(Vector2.zero, size);
         m_broadPhase.Build(boundary, ref m_physicsObjects);
-        m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
 
         m_creator.physicsObjectLink = (m_physicsObjects.Count == 0) ? null : m_physicsObjects[m_physicsObjects.Count - 1];
 
@@ -189,15 +188,17 @@ public class Simulator : MonoBehaviour
 
         m_intersections.Clear();
 
-        m_broadPhase.Draw(Color.green, 0.0f);
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         m_queryRange.center = mousePos;
         m_queryRange.Draw(Color.green, 0.0f);
         m_queriedObjects.Clear();
+        m_broadPhase.Build(boundary, ref m_physicsObjects);
         m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
         foreach (PhysicsObject physicsObject in m_queriedObjects)
         {
             Debug.DrawLine(mousePos, physicsObject.position, Color.red);
         }
+
+        m_broadPhase.Draw(Color.green, 0.0f);
     }
 }

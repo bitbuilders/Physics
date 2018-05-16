@@ -8,6 +8,7 @@ public class BVHNode
     AABB m_boundary;
     BVHNode m_left = null;
     BVHNode m_right = null;
+    bool m_touched = false;
 
     public BVHNode(List<PhysicsObject> objects)
     {
@@ -56,7 +57,10 @@ public class BVHNode
 
     public void Draw(Color color, float duration = 0)
     {
-        m_boundary.Draw(color, duration);
+        Color c = m_touched ? Color.red : color;
+        if (m_touched) m_boundary.size -= Vector2.one * 0.2f;
+        m_boundary.Draw(c, duration);
+        if (m_touched) m_boundary.size += Vector2.one * 0.2f;
 
         if (m_left == null)
             return;
@@ -65,21 +69,33 @@ public class BVHNode
         m_right.Draw(color, duration);
     }
 
+    public void ResetTouch()
+    {
+        m_touched = false;
+        if (m_left != null) m_left.m_touched = false;
+        if (m_right != null) m_right.m_touched = false;
+    }
+
     public void Query(AABB range, ref List<PhysicsObject> physicsObjects)
     {
         if (!m_boundary.Intersects(range))
-            return;
-
-        if (m_objects.Count == 1)
         {
-            physicsObjects.Add(m_objects[0]);
             return;
         }
+        else
+        {
+            m_touched = true;
+            if (m_objects.Count == 1)
+            {
+                physicsObjects.Add(m_objects[0]);
+                return;
+            }
 
-        if (m_left == null)
-            return;
+            if (m_left == null)
+                return;
 
-        m_left.Query(range, ref physicsObjects);
-        m_right.Query(range, ref physicsObjects);
+            m_left.Query(range, ref physicsObjects);
+            m_right.Query(range, ref physicsObjects);
+        }
     }
 }

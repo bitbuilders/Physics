@@ -81,6 +81,15 @@ public class Simulator : MonoBehaviour
                     ((PhysicsObjectSpring) m_physicsObjects[m_physicsObjects.Count - 2]).AddLink(newPhysicsObject);
                 }
             }
+            else if (!Input.GetKey(KeyCode.LeftShift) && newPhysicsObject.GetType() == typeof(PhysicsObjectSpringVerlet))
+            {
+                if (m_physicsObjects.Count > 1 && m_physicsObjects[m_physicsObjects.Count - 2].GetType() == typeof(PhysicsObjectSpringVerlet))
+                {
+                    PhysicsObjectSpringVerlet prev = (PhysicsObjectSpringVerlet)m_physicsObjects[m_physicsObjects.Count - 2];
+                    prev.AddLink(newPhysicsObject);
+                    ((PhysicsObjectSpringVerlet)newPhysicsObject).restLength = (prev.position - newPhysicsObject.position).magnitude;
+                }
+            }
         }
 
         Vector2 force = Vector2.zero;
@@ -183,7 +192,6 @@ public class Simulator : MonoBehaviour
             else if (blue) color = Color.blue;
             else color = Color.white;
 			physicsObject.Draw(color);
-            physicsObject.previousPosition = physicsObject.position;
 		}
 
         m_intersections.Clear();

@@ -21,4 +21,13 @@ public static class Integrator
         physicsObject.velocity = physicsObject.velocity + physicsObject.acceleration * dt;
         physicsObject.position = physicsObject.position + physicsObject.velocity * dt;
     }
+
+    public static void Verlet(float dt, PhysicsObject physicsObject)
+    {
+        physicsObject.acceleration = physicsObject.force * physicsObject.inverseMass;
+        physicsObject.velocity = physicsObject.position - physicsObject.previousPosition;
+        physicsObject.position += physicsObject.velocity * physicsObject.damping + (physicsObject.acceleration * dt * dt);
+
+        physicsObject.previousPosition = physicsObject.position;
+    }
 }

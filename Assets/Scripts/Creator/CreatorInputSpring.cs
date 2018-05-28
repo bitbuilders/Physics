@@ -15,7 +15,10 @@ public class CreatorInputSpring : Creator
 			Collider collider = Collider.Create(type, size);
             physicsObject.springConstant = springConstant;
             physicsObject.restLength = restLength;
-            physicsObject.AddLink(physicsObjectLink);
+            if (physicsObjectLink != null)
+            {
+                physicsObject.AddLink(physicsObjectLink);
+            }
 			physicsObject.Initialize(collider, position, Vector2.zero, mass, damping);
 		}
 

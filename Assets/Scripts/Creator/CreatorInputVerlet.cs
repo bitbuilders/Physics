@@ -13,10 +13,13 @@ public class CreatorInputVerlet : Creator
 			physicsObject = new PhysicsObjectSpringVerlet();
 			Vector2 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			Collider collider = Collider.Create(type, size);
-            physicsObject.springConstant = 10.0f;
-            physicsObject.restLength = restLength;
-            physicsObject.AddLink(physicsObjectLink);
+            physicsObject.springConstant = 1.0f;
 			physicsObject.Initialize(collider, position, Vector2.zero, mass, damping);
+            if (physicsObjectLink != null && !Input.GetKey(KeyCode.LeftShift))
+            {
+                physicsObject.AddLink(physicsObjectLink);
+                physicsObject.restLength = (physicsObjectLink.position - physicsObject.position).magnitude;
+            }
 		}
 
         return physicsObject;

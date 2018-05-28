@@ -9,11 +9,14 @@ public class PhysicsObjectSpringVerlet : PhysicsObjectSpring
         base.Draw(color, duration);
 
         // Draw spring
-        foreach (PhysicsObjectSpringVerlet physicsObject in physicsObjectLinks)
+        foreach (PhysicsObject physicsObject in physicsObjectLinks)
         {
-            if (physicsObject != null)
+            if (physicsObject.GetType() == typeof(PhysicsObjectSpringVerlet))
             {
-                Debug.DrawLine(position, physicsObject.position, Color.yellow);
+                if (physicsObject != null)
+                {
+                    Debug.DrawLine(position, physicsObject.position, Color.yellow);
+                }
             }
         }
     }
@@ -26,7 +29,7 @@ public class PhysicsObjectSpringVerlet : PhysicsObjectSpring
             {
                 PhysicsObjectSpringVerlet next = (PhysicsObjectSpringVerlet)po;
                 Vector2 pos = next.position;
-                Vector2 delta = pos - position;
+                Vector2 delta = position - pos;
                 float deltaLength = Mathf.Sqrt(Vector2.Dot(delta, delta));
                 float diff = (deltaLength - restLength) / deltaLength;
                 position -= delta * 0.5f * diff;

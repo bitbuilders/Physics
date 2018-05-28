@@ -7,7 +7,8 @@ public abstract class BroadPhase
     public enum eType
     {
         BVH,
-        QUAD_TREE
+        QUAD_TREE,
+        NONE
     }
 
     public abstract void Build(AABB boundary, ref List<PhysicsObject> physicsObjects);

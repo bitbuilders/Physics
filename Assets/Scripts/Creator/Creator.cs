@@ -11,6 +11,7 @@ public abstract class Creator
         POINT,
         RANDOM,
         SPRING,
+        VERLET,
         VELOCITY
     }
 

@@ -65,6 +65,7 @@ public class PhysicsObject
     public void StepSimulation(float dt, Simulator.IntegratorDelegate integrator)
     {
         integrator(dt, this);
+        previousPosition = position;
     }
 
     public void SetAwake(bool awake)
@@ -76,8 +77,8 @@ public class PhysicsObject
         }
         else
         {
-            state = state & ~eState.AWAKE;
-            velocity = Vector2.zero;
+            //state = state & ~eState.AWAKE;
+            //velocity = Vector2.zero;
         }
     }
 }

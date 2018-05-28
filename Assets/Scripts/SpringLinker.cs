@@ -36,7 +36,7 @@ public class SpringLinker : MonoBehaviour
 
         foreach (PhysicsObject physicsObject in m_simulator.m_physicsObjects)
         {
-            if (physicsObject.GetType() == typeof(PhysicsObjectSpring))
+            if (physicsObject.GetType() == typeof(PhysicsObjectSpring) || physicsObject.GetType().IsSubclassOf(typeof(PhysicsObjectSpring)))
             {
                 Intersection.Result result = new Intersection.Result();
                 bool intersects = pointPhysicsObject.Intersects(physicsObject, ref result);
@@ -55,6 +55,15 @@ public class SpringLinker : MonoBehaviour
         {
             m_physicsObjectFirst.AddLink(m_physicsObjectSecond);
             m_physicsObjectSecond.AddLink(m_physicsObjectFirst);
+            if (m_physicsObjectFirst.GetType() == typeof(PhysicsObjectSpringVerlet))
+            {
+                m_physicsObjectFirst.restLength = (m_physicsObjectSecond.position - m_physicsObjectFirst.position).magnitude;
+
+            }
+            if (m_physicsObjectSecond.GetType() == typeof(PhysicsObjectSpringVerlet))
+            {
+                m_physicsObjectSecond.restLength = (m_physicsObjectSecond.position - m_physicsObjectFirst.position).magnitude;
+            }
             m_physicsObjectFirst = null;
             m_physicsObjectSecond = null;
         }

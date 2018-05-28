@@ -7,7 +7,8 @@ public class Simulator : MonoBehaviour
     [SerializeField] Creator.CreatorType m_creatorType = Creator.CreatorType.POINT;
 	[SerializeField] Collider.eType m_type = Collider.eType.POINT;
     [SerializeField] BroadPhase.eType m_broadPhaseType = BroadPhase.eType.BVH;
-    [SerializeField] [Range(-50.0f, 50.0f)] float m_gravity = 0.0f;
+    [SerializeField] bool m_verletCollision = false;
+    [SerializeField] [Range(-50.0f, 500.0f)] float m_gravity = 0.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_restingVelocityMin = 0.015f;
     [SerializeField][Range(0.0f, 1.0f)] float m_damping = 1.0f;
     [SerializeField][Range(0.0f, 1.0f)] float m_restitutionCoef = 1.0f;
@@ -34,21 +35,37 @@ public class Simulator : MonoBehaviour
     {
         m_creatorTypes = new List<Creator>() {
             new CreatorInputLine(), new CreatorInputPoint(), new CreatorInputRandom(),
-            new CreatorInputSpring(), new CreatorInputVelocity() };
+            new CreatorInputSpring(), new CreatorInputVerlet(), new CreatorInputVelocity() };
         m_phaseTypes = new List<BroadPhase>() { new BVH(), new QuadTree() };
-        m_broadPhase = m_phaseTypes[(int)m_broadPhaseType];
+        if (m_broadPhaseType == BroadPhase.eType.NONE)
+            m_broadPhase = null;
+        else
+            m_broadPhase = m_phaseTypes[(int)m_broadPhaseType];
         m_creator = m_creatorTypes[(int)m_creatorType];
         m_physicsObjects = new List<PhysicsObject>();
         m_intersections = new List<Intersection.Result>();
         m_queriedObjects = new List<PhysicsObject>();
         m_queryRange = new AABB(Input.mousePosition, new Vector2(m_querySize, m_querySize));
 
-        m_integrator = Integrator.ExplicitEuler;
+        if (m_verletCollision)
+            m_integrator = Integrator.Verlet;
+        else
+            m_integrator = Integrator.ExplicitEuler;
     }
 
     void Update()
     {
         float dt = Time.deltaTime;
+
+        if (m_verletCollision)
+            m_integrator = Integrator.Verlet;
+        else
+            m_integrator = Integrator.ExplicitEuler;
+
+        if (m_broadPhaseType == BroadPhase.eType.NONE)
+            m_broadPhase = null;
+        else
+            m_broadPhase = m_phaseTypes[(int)m_broadPhaseType];
 
         // set creator values
         m_creator = m_creatorTypes[(int)m_creatorType];
@@ -64,7 +81,7 @@ public class Simulator : MonoBehaviour
         m_queryRange.size = new Vector2(m_querySize, m_querySize);
         Vector2 size = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height) * 1.495f);
         AABB boundary = new AABB(Vector2.zero, size);
-        m_broadPhase.Build(boundary, ref m_physicsObjects);
+        if (m_broadPhase != null) m_broadPhase.Build(boundary, ref m_physicsObjects);
 
         m_creator.physicsObjectLink = (m_physicsObjects.Count == 0) ? null : m_physicsObjects[m_physicsObjects.Count - 1];
 
@@ -87,7 +104,7 @@ public class Simulator : MonoBehaviour
                 {
                     PhysicsObjectSpringVerlet prev = (PhysicsObjectSpringVerlet)m_physicsObjects[m_physicsObjects.Count - 2];
                     prev.AddLink(newPhysicsObject);
-                    ((PhysicsObjectSpringVerlet)newPhysicsObject).restLength = (prev.position - newPhysicsObject.position).magnitude;
+                    prev.restLength = (prev.position - newPhysicsObject.position).magnitude;
                 }
             }
         }
@@ -104,6 +121,10 @@ public class Simulator : MonoBehaviour
             if (physicsObject.GetType() == typeof(PhysicsObjectSpring))
             {
                 physicsObject.force += ((PhysicsObjectSpring)physicsObject).GetSpringForce(dt);
+            }
+            else if (physicsObject.GetType() == typeof(PhysicsObjectSpringVerlet))
+            {
+                ((PhysicsObjectSpringVerlet)physicsObject).UpdateSprings();
             }
         }
 
@@ -129,6 +150,56 @@ public class Simulator : MonoBehaviour
         }
 
         // check collision detection
+        if (m_broadPhase != null)
+        {
+            BroadPhaseCollisionCheck();
+        }
+        else
+        {
+            NormalCollisionCheck();
+        }
+
+
+        //Solve intersections
+        if (m_verletCollision)
+        {
+            VerletCollisionResponse();
+        }
+        else
+        {
+            NonVerletCollisionResponse();
+        }
+
+        // draw physics objects
+        foreach (PhysicsObject physicsObject in m_physicsObjects)
+        {
+            bool red = (physicsObject.state & PhysicsObject.eState.COLLIDED) == PhysicsObject.eState.COLLIDED;
+            bool blue = !physicsObject.Awake;
+            Color color;
+            if (red) color = Color.red;
+            else if (blue) color = Color.blue;
+            else color = Color.white;
+			physicsObject.Draw(color);
+		}
+
+        m_intersections.Clear();
+
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        m_queryRange.center = mousePos;
+        m_queryRange.Draw(Color.green, 0.0f);
+        m_queriedObjects.Clear();
+        if (m_broadPhase != null) m_broadPhase.Build(boundary, ref m_physicsObjects);
+        if (m_broadPhase != null) m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
+        foreach (PhysicsObject physicsObject in m_queriedObjects)
+        {
+            Debug.DrawLine(mousePos, physicsObject.position, Color.red);
+        }
+
+        if (m_broadPhase != null) m_broadPhase.Draw(Color.green, 0.0f);
+    }
+
+    private void BroadPhaseCollisionCheck()
+    {
         Intersection.Result result = new Intersection.Result();
         foreach (PhysicsObject physicsObject in m_physicsObjects)
         {
@@ -154,8 +225,33 @@ public class Simulator : MonoBehaviour
                 }
             }
         }
+    }
 
-        //Solve intersections
+    private void NormalCollisionCheck()
+    {
+        Intersection.Result result = new Intersection.Result();
+        for (int i = 0; i < m_physicsObjects.Count; i++)
+        {
+            for (int j = i + 1; j < m_physicsObjects.Count; j++)
+            {
+                bool intersects = m_physicsObjects[i].Intersects(m_physicsObjects[j], ref result);
+                //bool bothAsleep = !m_physicsObjects[i].Awake && !m_physicsObjects[j].Awake;
+                if (/*!bothAsleep &&*/ intersects)
+                {
+                    //bool oneIsStatic = (m_physicsObjects[i].inverseMass == 0.0f || m_physicsObjects[j].inverseMass == 0.0f);
+                    //if (!m_physicsObjects[i].Awake && !oneIsStatic) m_physicsObjects[i].SetAwake(true);
+                    //else if (!m_physicsObjects[j].Awake && !oneIsStatic) m_physicsObjects[j].SetAwake(true);
+
+                    m_physicsObjects[i].state |= PhysicsObject.eState.COLLIDED;
+                    m_physicsObjects[j].state |= PhysicsObject.eState.COLLIDED;
+                    m_intersections.Add(result);
+                }
+            }
+        }
+    }
+
+    private void NonVerletCollisionResponse()
+    {
         foreach (Intersection.Result intersection in m_intersections)
         {
             PhysicsObject object1 = intersection.collider1.physicsObject;
@@ -172,41 +268,45 @@ public class Simulator : MonoBehaviour
                 restitution = 0.0f;
             }
             Vector2 impulse = Vector2.zero;
-            float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass); 
+            float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass);
             impulse = intersection.contactNormal * j;
-            
+
             if (velNorm < 0.0f) // Opposite direction
             {
                 object1.velocity -= impulse * object1.inverseMass;
                 object2.velocity += impulse * object2.inverseMass;
             }
         }
+    }
 
-        // draw physics objects
-        foreach (PhysicsObject physicsObject in m_physicsObjects)
+    private void VerletCollisionResponse()
+    {
+        foreach (Intersection.Result intersection in m_intersections)
         {
-            bool red = (physicsObject.state & PhysicsObject.eState.COLLIDED) == PhysicsObject.eState.COLLIDED;
-            bool blue = !physicsObject.Awake;
-            Color color;
-            if (red) color = Color.red;
-            else if (blue) color = Color.blue;
-            else color = Color.white;
-			physicsObject.Draw(color);
-		}
+            PhysicsObject object1 = intersection.collider1.physicsObject;
+            PhysicsObject object2 = intersection.collider2.physicsObject;
+            Vector2 separation = intersection.contactNormal * (intersection.distance / (2.0f));
+            object1.previousPosition = object1.position;
+            object2.previousPosition = object2.position;
+            object1.position += separation;
+            object2.position -= separation;
 
-        m_intersections.Clear();
+            //Vector2 relativeVelocity = object2.velocity - object1.velocity;
+            //float velNorm = Vector2.Dot(relativeVelocity, intersection.contactNormal);
+            //float restitution = Mathf.Min(object1.restitutionCoef, object2.restitutionCoef);
+            //if (relativeVelocity.magnitude < 0.1f)
+            //{
+            //    restitution = 0.0f;
+            //}
+            //Vector2 impulse = Vector2.zero;
+            //float j = -(1.0f + restitution) * velNorm / (object1.inverseMass + object2.inverseMass);
+            //impulse = intersection.contactNormal * j;
 
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        m_queryRange.center = mousePos;
-        m_queryRange.Draw(Color.green, 0.0f);
-        m_queriedObjects.Clear();
-        m_broadPhase.Build(boundary, ref m_physicsObjects);
-        m_broadPhase.Query(m_queryRange, ref m_queriedObjects);
-        foreach (PhysicsObject physicsObject in m_queriedObjects)
-        {
-            Debug.DrawLine(mousePos, physicsObject.position, Color.red);
+            //if (velNorm < 0.0f) // Opposite direction
+            //{
+            //    object1.position -= impulse * object1.inverseMass;
+            //    object2.position += impulse * object2.inverseMass;
+            //}
         }
-
-        m_broadPhase.Draw(Color.green, 0.0f);
     }
 }

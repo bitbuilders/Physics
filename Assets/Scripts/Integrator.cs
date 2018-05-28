@@ -26,8 +26,6 @@ public static class Integrator
     {
         physicsObject.acceleration = physicsObject.force * physicsObject.inverseMass;
         physicsObject.velocity = physicsObject.position - physicsObject.previousPosition;
-        physicsObject.position += physicsObject.velocity * physicsObject.damping + (physicsObject.acceleration * dt * dt);
-
-        physicsObject.previousPosition = physicsObject.position;
+        physicsObject.position = physicsObject.position + physicsObject.velocity * physicsObject.damping + (physicsObject.acceleration * dt * dt);
     }
 }
